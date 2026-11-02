@@ -1,0 +1,1221 @@
+{
+  "name": "final resume bot 1 (documented)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        4896,
+        1856
+      ],
+      "id": "036bb931-6967-433a-8beb-5f3d167368e9",
+      "name": "Telegram Trigger",
+      "webhookId": "e8cf8d8f-75f3-4e62-bdcf-c36c8908548e",
+      "credentials": {
+        "telegramApi": {
+          "id": "gshieFX5tGgAUcav",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c6cbd868-d869-40bf-9ef3-955983cb5765",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "hi",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "2623c181-12f5-4464-a592-033263c91f49",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "hello",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c43e70a7-5415-44b8-afdd-7de549f5b053",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "hey",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5136,
+        1856
+      ],
+      "id": "0b9b284d-0089-43eb-93e8-853a7e0c1c14",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=hi  {{ $json.message.from.first_name }}\n\nupload a zip/pdf format resume to know the ats score",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5456,
+        1616
+      ],
+      "id": "e1778d23-1c49-43fb-be8e-e4542e77f301",
+      "name": "Send a text message",
+      "webhookId": "23d4fdb5-eaf3-4537-b520-04f6dc641977",
+      "credentials": {
+        "telegramApi": {
+          "id": "gshieFX5tGgAUcav",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.document.file_name }}",
+                    "rightValue": ".zip",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    },
+                    "id": "97b51bf2-a51c-4823-9e42-f6926cf7c016"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "zip"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bc9e47a3-2798-475b-8202-5277e6b91478",
+                    "leftValue": "={{ $json.message.document.file_name }}",
+                    "rightValue": ".pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        5264,
+        2096
+      ],
+      "id": "8199ec2d-3b60-4391-9f5e-39bf4369abdd",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        5408,
+        2336
+      ],
+      "id": "4fcc6077-d140-4166-8415-09db4ec03081",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Below is the extracted text from a résumé PDF. Analyze it and return only the ATS score out of 100.\n\nResume Text:\n{{ $json.text }}\n\nReturn format:\n{\"ats_score\":0,\n\"name\":\"\",\n\"email\":\"\",\n\"phone no\":0}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an ATS evaluation assistant. Your role is to analyze résumé text and calculate an ATS score out of 100. The score must reflect keyword relevance, skills match, formatting, clarity, and structure. Always output only the final score inside a JSON object. Do not include explanations.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        5728,
+        2336
+      ],
+      "id": "dadebae8-b57f-4d45-ab52-74a666b5a850",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        5728,
+        2592
+      ],
+      "id": "ef291283-5090-4b55-82d7-d0ae5317e096",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0r8v94gjhLtgzkfb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"name\":\"pavan\",\n  \"email\":\"pavan@gmail.com\",\n  \"phone no\":1234455,\n  \"ats_score\":70\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        5888,
+        2576
+      ],
+      "id": "e8cccf73-1646-4ad1-87ae-04943a4bb122",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "24514580-cab2-42e6-baa8-89146650f1aa",
+              "leftValue": "={{ $json.output.ats_score }}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6160,
+        2336
+      ],
+      "id": "a7e743d8-5406-4d1b-928c-8e53d8d640de",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk",
+          "mode": "list",
+          "cachedResultName": "resume shortlisting",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "accepted",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.name }}",
+            "email": "={{ $json.output.email }}",
+            "ats_score": "={{ $json.output.ats_score }}",
+            "phone no": "={{ $json.output['phone no'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone no",
+              "displayName": "phone no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ats_score",
+              "displayName": "ats_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6368,
+        2256
+      ],
+      "id": "7964174e-de9d-4536-8eca-2d9e7bb4bc3e",
+      "name": "Append row in sheet"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk",
+          "mode": "list",
+          "cachedResultName": "resume shortlisting",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1213950991,
+          "mode": "list",
+          "cachedResultName": "rejected",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit#gid=1213950991"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.name }}",
+            "email": "={{ $json.output.email }}",
+            "ats_score": "={{ $json.output.ats_score }}",
+            "phone no": "={{ $json.output['phone no'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone no",
+              "displayName": "phone no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ats_score",
+              "displayName": "ats_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6368,
+        2480
+      ],
+      "id": "5de3ec6e-1049-4b21-8ff2-e3b67b521067",
+      "name": "Append row in sheet1"
+    },
+    {
+      "parameters": {
+        "outputPrefix": "data"
+      },
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        5440,
+        1840
+      ],
+      "id": "694237b6-4b0a-435b-b029-378e62fa16cd",
+      "name": "Compression"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        6208,
+        1680
+      ],
+      "id": "641ef668-7ff6-4ee6-bd76-0b4db3aa30a8",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1ec012e6-96d4-4156-a40f-bfeaf18c6bb6",
+              "leftValue": "={{ $binary[$binary.keys()[0]].mimeType }}",
+              "rightValue": "=text/plain",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5872,
+        1840
+      ],
+      "id": "be1bfda5-e21c-41f1-9e33-dfe627d2eed9",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "=$binary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5632,
+        1840
+      ],
+      "id": "2fa64dde-6ae6-4711-abdc-107f5694cb27",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "={{ $binary.keys()[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        6512,
+        1696
+      ],
+      "id": "ea391f4a-41ea-43c9-a1dd-45a3cb950c04",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Below is the extracted text from a résumé PDF. Analyze it and return only the ATS score out of 100.\n\nResume Text:\n{{ $json.text }}\n\nReturn format:\n{\"ats_score\":0,\n\"name\":\"\",\n\"email\":\"\",\n\"phone no\":0}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an ATS evaluation assistant. Your role is to analyze résumé text and calculate an ATS score out of 100. The score must reflect keyword relevance, skills match, formatting, clarity, and structure. Always output only the final score inside a JSON object. Do not include explanations.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        6880,
+        1632
+      ],
+      "id": "40656fe4-15d6-4b6e-b567-96415ecfc561",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        6864,
+        1824
+      ],
+      "id": "6c6a7f4a-f216-4db7-a131-9230cbb6b1f5",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0r8v94gjhLtgzkfb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"name\":\"pavan\",\n  \"email\":\"pavan@gmail.com\",\n  \"phone no\":1234455,\n  \"ats_score\":70\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        7024,
+        1824
+      ],
+      "id": "f633926b-85af-4ff9-b729-2b14764ec943",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "24514580-cab2-42e6-baa8-89146650f1aa",
+              "leftValue": "={{ $json.output.ats_score }}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7248,
+        1632
+      ],
+      "id": "89e570e8-21b8-45f7-920d-942ad7e65acd",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk",
+          "mode": "list",
+          "cachedResultName": "resume shortlisting",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "accepted",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.name }}",
+            "email": "={{ $json.output.email }}",
+            "ats_score": "={{ $json.output.ats_score }}",
+            "phone no": "={{ $json.output['phone no'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone no",
+              "displayName": "phone no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ats_score",
+              "displayName": "ats_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7456,
+        1600
+      ],
+      "id": "6602eb4c-1221-438c-8a22-df0b5ade8d1c",
+      "name": "Append row in sheet2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk",
+          "mode": "list",
+          "cachedResultName": "resume shortlisting",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1213950991,
+          "mode": "list",
+          "cachedResultName": "rejected",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l5HSYBbEUzVnqTj5UCzcDlp5QwFc8KhiAp6fRXsk2Jk/edit#gid=1213950991"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.output.name }}",
+            "email": "={{ $json.output.email }}",
+            "ats_score": "={{ $json.output.ats_score }}",
+            "phone no": "={{ $json.output['phone no'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone no",
+              "displayName": "phone no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ats_score",
+              "displayName": "ats_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7456,
+        1792
+      ],
+      "id": "e898dc85-c45b-482e-af27-b707f9b6d744",
+      "name": "Append row in sheet3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        7952,
+        1728
+      ],
+      "id": "d6bd780d-8bda-4665-b8c4-4e89022daa03",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        7872,
+        1920
+      ],
+      "id": "933ee6f1-46e5-4d61-b430-ec2dcc9815b0",
+      "name": "Wait",
+      "webhookId": "03c610a4-c312-43a0-8c3f-0165b222f7c1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Application Update - Shortlisted For Next Steps",
+        "emailType": "text",
+        "message": "=Dear {{ $json.name }},\n\nThank you for applying for the [Position Name] role at [Company Name].After reviewing your resume, we are pleased to inform you that you have been shortlisted for the next stage of our selection process.\n\nOur team found your skills and experience to be a strong match for the role. We will share the next steps and scheduling details shortly.If you have any questions in the meantime, feel free to reach out.\n\nKind regards,\nPavan\nHR\nxyz solutions\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        6608,
+        2256
+      ],
+      "id": "a008ce83-f374-4cf6-9e0b-446215beccfd",
+      "name": "Send a message",
+      "webhookId": "c3bad929-2c62-412d-91ba-0a7bcc54222a"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Application Update - Regarding Your Candidacy",
+        "emailType": "text",
+        "message": "=Dear {{ $json.name }},\n\nThank you for your interest in the [Position Name] role at [Company Name] and for taking the time to apply.\n\nAfter carefully reviewing your resume, we regret to inform you that you have not been shortlisted for further rounds at this time. While your background is valuable, we have decided to proceed with candidates whose experience more closely matches our current requirements.\n\nWe truly appreciate your effort and encourage you to apply for future openings that align with your profile.\n\nWishing you all the best in your career ahead.\n\nKind regards,\nPavan\nHR\nxyz solutions\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        6624,
+        2480
+      ],
+      "id": "483cff7b-aca1-4bdd-b183-ce14bdcf9d2a",
+      "name": "Send a message1",
+      "webhookId": "c3bad929-2c62-412d-91ba-0a7bcc54222a"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Application Update - Shortlisted For Next Steps",
+        "emailType": "text",
+        "message": "=Dear {{ $json.name }},\n\nThank you for applying for the [Position Name] role at [Company Name].After reviewing your resume, we are pleased to inform you that you have been shortlisted for the next stage of our selection process.\n\nOur team found your skills and experience to be a strong match for the role. We will share the next steps and scheduling details shortly.If you have any questions in the meantime, feel free to reach out.\n\nKind regards,\nPavan\nHR\nxyz solutions\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        7680,
+        1536
+      ],
+      "id": "04e0dd4e-1a61-4eb6-ba20-a624c44b1d98",
+      "name": "Send a message2",
+      "webhookId": "c3bad929-2c62-412d-91ba-0a7bcc54222a"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Application Update - Regarding Your Candidacy",
+        "emailType": "text",
+        "message": "=Dear {{ $json.name }},\n\nThank you for your interest in the [Position Name] role at [Company Name] and for taking the time to apply.\n\nAfter carefully reviewing your resume, we regret to inform you that you have not been shortlisted for further rounds at this time. While your background is valuable, we have decided to proceed with candidates whose experience more closely matches our current requirements.\n\nWe truly appreciate your effort and encourage you to apply for future openings that align with your profile.\n\nWishing you all the best in your career ahead.\n\nKind regards,\nPavan\nHR\nxyz solutions\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        7680,
+        1792
+      ],
+      "id": "8c9d49ef-fda5-47c1-9152-2579022bf86e",
+      "name": "Send a message3",
+      "webhookId": "c3bad929-2c62-412d-91ba-0a7bcc54222a"
+    },
+    {
+      "parameters": {
+        "content": "# greet message",
+        "height": 224,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5216,
+        1568
+      ],
+      "typeVersion": 1,
+      "id": "35cac288-9a04-4997-a3e3-8e271bf4d6e8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Zip file workflow\n",
+        "height": 656,
+        "width": 2336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5792,
+        1504
+      ],
+      "typeVersion": 1,
+      "id": "d70ab20c-1a66-47d1-8905-e128e7ecd6a2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Single pdf workflow\n",
+        "height": 512,
+        "width": 1568
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5312,
+        2224
+      ],
+      "typeVersion": 1,
+      "id": "f3c5a5b2-01b7-4882-ae1b-abe4792d5cd5",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Compression",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compression": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "958b19a1-2aa5-494e-8dac-84ef9f3691cf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ae51f77fe1949b397ccd7cbe0e6e781a8b871bd23b60926ca6f710551119f5e"
+  },
+  "nodeGroups": [],
+  "id": "IYdEvSpLCtQUOnyh",
+  "tags": []
+}
